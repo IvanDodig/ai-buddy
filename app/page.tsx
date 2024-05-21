@@ -1,94 +1,129 @@
-import Image from "next/image";
+"use client";
+import { useRef, useState } from "react";
 import styles from "./page.module.css";
+import { IHistory, postAIChatMessages } from "@/services/services";
+
+const questions = [
+  (value: string) =>
+    `Pozdrav ${value}. Molimo navedite u kojem ćete gradu biti na GO.`,
+  (value: string) => `Molimo navedite kojeg datuma dolazite u ${value}.`,
+  (value: string) => `Do kada ostajete?`,
+  (value: string) =>
+    `U tom razdoblju imamo različitih događanja. Upišite što od navedenog Vas zanima: Koncerti, Kino, izložbe, nogometne utakmice.`,
+];
+
+const createTemplateString = (answers: string[]) =>
+  `Molim te ${answers[4]} za grad ${answers[1]} izmedju datuma ${answers[2]} i ${answers[3]}`;
 
 export default function Home() {
+  const msgInputRef = useRef<any>(null);
+
+  const [messages, setMessages] = useState([
+    {
+      sender: "AI Buddy",
+      content: "Za pokretanje AI Buddy-a upišite svoje ime.",
+    },
+  ]);
+  // const [history, setHistory] = useState<IHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [history, setHistory] = useState<IHistory[]>([]);
+
+  const handleSendMessage = (value: string) => {
+    setMessages((x) => [
+      ...x,
+      {
+        sender: "You",
+        content: value,
+      },
+    ]);
+
+    if (answers.length < questions.length) {
+      setMessages((x) => [
+        ...x,
+        {
+          sender: "AI Buddy",
+          content: questions[answers.length](value),
+        },
+      ]);
+
+      setAnswers((answers) => [...answers, value]);
+      return;
+    }
+
+    setIsLoading(true);
+
+    const User =
+      history.length === 0 ? createTemplateString([...answers, value]) : value;
+
+    postAIChatMessages({
+      History: [
+        ...history,
+        {
+          Bot: null,
+          User,
+        },
+      ],
+    })
+      .then((res) => {
+        if (res?.answer) {
+          setMessages((x) => [
+            ...x,
+            {
+              sender: "AI Buddy",
+              content: res?.answer,
+            },
+          ]);
+          setHistory([...history, { Bot: res.answer, User }]);
+          return;
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  };
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+      <div className={styles.header}>Moj AI buddy</div>
+      <div className={styles.conversationConteiner}>
+        {messages.map((x, index) => (
+          <div className={styles.messageBox} key={index}>
+            <p>{x.sender}</p>
+            <p>{x.content}</p>
+          </div>
+        ))}
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+      {isLoading && (
+        <div className={styles.loadingContainer}>Učitavanje...</div>
+      )}
+      <div className={styles.footer}>
+        <textarea
+          disabled={isLoading}
+          className={styles.msgInput}
+          ref={msgInputRef}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              const value = msgInputRef?.current?.value;
+              if (!value) return;
+              handleSendMessage(value);
+              msgInputRef.current.value = "";
+            }
+          }}
         />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          className={styles.sendBtn}
+          disabled={isLoading}
+          onClick={() => {
+            const value = msgInputRef?.current?.value;
+            if (!value) return;
+            handleSendMessage(value);
+            msgInputRef.current.value = "";
+          }}
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
+          Pošalji
+        </button>
       </div>
     </main>
   );
