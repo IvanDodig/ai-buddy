@@ -139,11 +139,24 @@ export default function Home() {
             }
           }}
           rows={1}
-          onKeyPress={(e) => {
+          onKeyDown={(e) => {
+            const value = msgInputRef?.current?.value;
+            if (!value) return;
+
+            if (e.key === "Enter" && e.shiftKey) {
+              e.preventDefault();
+              msgInputRef.current.value = value + "\n";
+              const textarea = msgInputRef.current;
+              if (textarea) {
+                textarea.style.height = "auto"; // Reset height to calculate actual height
+                textarea.style.height = `${textarea.scrollHeight}px`; // Set height to fit content
+              }
+              // setText((prevText) => prevText + "\n");
+              return;
+            }
+
             if (e.key === "Enter") {
               e.preventDefault();
-              const value = msgInputRef?.current?.value;
-              if (!value) return;
               handleSendMessage(value);
               msgInputRef.current.value = "";
             }

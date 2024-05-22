@@ -6,8 +6,8 @@
   max-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* box-shadow: var(--common-box-shadow); */
-  border: 1px solid var(--surface-color-3);
+  box-shadow: var(--common-box-shadow);
+  /* border: 1px solid var(--surface-color-3); */
 
   --headerHeight: 70px;
   --footerHeight: 70px;
@@ -64,7 +64,6 @@
   padding: 0.5rem 1rem;
   font-size: 1rem;
   resize: none;
-  overflow: hidden;
   height: auto;
   background-color: transparent;
   border: none;
