@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
 import { IHistory, postAIChatMessages } from "@/services/services";
 
@@ -15,12 +15,18 @@ const questions = [
 const createTemplateString = (answers: string[]) =>
   `Molim te ${answers[4]} za grad ${answers[1]} izmedju datuma ${answers[2]} i ${answers[3]}`;
 
+const MSG_TYPE = {
+  INCOMING: "icoming",
+  OUTGOING: "outgoing",
+  ERROR: "error",
+};
+
 export default function Home() {
   const msgInputRef = useRef<any>(null);
 
   const [messages, setMessages] = useState([
     {
-      sender: "AI Buddy",
+      type: MSG_TYPE.INCOMING,
       content: "Za pokretanje AI Buddy-a upišite svoje ime.",
     },
   ]);
@@ -30,11 +36,28 @@ export default function Home() {
   const [answers, setAnswers] = useState<string[]>([]);
   const [history, setHistory] = useState<IHistory[]>([]);
 
+  useEffect(() => {
+    function autoExpand() {
+      const textarea = document.getElementById("myTextarea");
+      if (textarea) {
+        textarea.style.height = "auto"; // Reset height to auto to calculate actual height
+        textarea.style.height = textarea.scrollHeight + "px"; // Set height to fit content
+      }
+    }
+
+    autoExpand(); // Call autoExpand after the component is mounted
+
+    // Cleanup function
+    return () => {
+      // You can remove event listeners or perform other cleanup here if needed
+    };
+  }, []);
+
   const handleSendMessage = (value: string) => {
     setMessages((x) => [
       ...x,
       {
-        sender: "You",
+        type: MSG_TYPE.OUTGOING,
         content: value,
       },
     ]);
@@ -43,7 +66,7 @@ export default function Home() {
       setMessages((x) => [
         ...x,
         {
-          sender: "AI Buddy",
+          type: MSG_TYPE.INCOMING,
           content: questions[answers.length](value),
         },
       ]);
@@ -71,7 +94,7 @@ export default function Home() {
           setMessages((x) => [
             ...x,
             {
-              sender: "AI Buddy",
+              type: MSG_TYPE.INCOMING,
               content: res?.answer,
             },
           ]);
@@ -85,23 +108,37 @@ export default function Home() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.header}>Moj AI buddy</div>
+      <div className={styles.header}>AI buddy</div>
       <div className={styles.conversationConteiner}>
         {messages.map((x, index) => (
-          <div className={styles.messageBox} key={index}>
-            <p>{x.sender}</p>
+          <div className={`${styles.messageBox} ${styles[x.type]}`} key={index}>
             <p>{x.content}</p>
           </div>
         ))}
       </div>
       {isLoading && (
-        <div className={styles.loadingContainer}>Učitavanje...</div>
+        <div className={styles.loadingContainer}>
+          <div className={styles.loadingIndicator}>
+            <span className={styles.dot}></span>
+            <span className={styles.dot}></span>
+            <span className={styles.dot}></span>
+          </div>
+        </div>
       )}
       <div className={styles.footer}>
         <textarea
+          ref={msgInputRef}
+          placeholder="Unesite poruku"
           disabled={isLoading}
           className={styles.msgInput}
-          ref={msgInputRef}
+          onChange={() => {
+            const textarea = msgInputRef.current;
+            if (textarea) {
+              textarea.style.height = "auto"; // Reset height to calculate actual height
+              textarea.style.height = `${textarea.scrollHeight}px`; // Set height to fit content
+            }
+          }}
+          rows={1}
           onKeyPress={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -122,7 +159,7 @@ export default function Home() {
             msgInputRef.current.value = "";
           }}
         >
-          Pošalji
+          S
         </button>
       </div>
     </main>

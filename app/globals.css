@@ -1,6 +1,26 @@
 * {
   box-sizing: border-box;
 }
+:root {
+  /* SURFACE COLOR */
+  --surface-color-1: rgb(255, 255, 255);
+  --surface-color-2: rgb(249, 249, 249);
+  --surface-color-3: rgb(188, 192, 197);
+  --surface-color-4: rgb(52, 53, 55);
+  --surface-color-5: rgb(20, 21, 21);
+
+  /* PRIMARY COLOR */
+  --primary-color-1: rgb(230, 235, 242);
+  --primary-color-3: rgb(55, 106, 178);
+
+  --common-box-shadow: rgba(17, 17, 26, 0.05) 0px 1px 0px,
+    rgba(17, 17, 26, 0.1) 0px 0px 8px;
+
+  /* BORDER RADIUS */
+  --br-s: 0.5rem;
+  --br-m: 1rem;
+  --br-l: 1.5rem;
+}
 
 body {
   padding: 0;

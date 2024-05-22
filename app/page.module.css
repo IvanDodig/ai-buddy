@@ -1,22 +1,27 @@
 .main {
-  background-color: rgb(233, 233, 233);
+  background-color: var(--surface-color-2);
   max-width: 900px;
   margin: auto;
   height: 100vh;
   max-height: 100vh;
   display: flex;
   flex-direction: column;
+  /* box-shadow: var(--common-box-shadow); */
+  border: 1px solid var(--surface-color-3);
 
   --headerHeight: 70px;
   --footerHeight: 70px;
+  overflow: hidden;
 }
 
 .header {
   height: var(--headerHeight);
-  background-color: rgb(160, 160, 160);
+  /* border-bottom: 1px solid black; */
   display: flex;
-  padding: 1rem;
   align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  box-shadow: var(--common-box-shadow);
 }
 
 .conversationConteiner {
@@ -24,34 +29,103 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 1rem;
   overflow: auto;
 }
 
 .messageBox {
-  padding: 0.5rem;
-  background-color: rgb(160, 160, 160);
+  background-color: var(--surface-color-1);
+  box-shadow: var(--common-box-shadow);
+  border-radius: var(--br-l);
+  padding: 0.75rem 1rem;
+  width: fit-content;
+  max-width: 70%;
+}
+
+.messageBox.outgoing {
+  background-color: var(--primary-color-3);
+  color: var(--surface-color-1);
+  align-self: flex-end;
 }
 
 .footer {
-  height: var(--footerHeight);
-  max-height: 400px;
-  background-color: rgb(160, 160, 160);
+  height: fit-content;
+  background-color: var(--surface-color-1);
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+  box-shadow: var(--common-box-shadow);
 }
 
 .msgInput {
   width: 100%;
-  height: 100%;
+  /* min-height: 100%; */
+  max-height: 400px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  resize: none;
+  overflow: hidden;
+  height: auto;
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+.msgInput:focus-visible {
+  border: none;
 }
 
 .sendBtn {
-  height: 100%;
+  border: none;
+  height: 3rem;
+  width: 3rem;
+  border-radius: 50%;
+  margin: 0.5rem;
+  cursor: pointer;
+  box-shadow: var(--common-box-shadow);
+  background-color: var(--primary-color-3);
+  color: var(--surface-color-1);
+  align-self: flex-end;
 }
 
 .loadingContainer {
-  padding: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.loadingIndicator {
+  width: 3.5rem;
+  height: 2rem;
+  border-radius: 1rem;
+  background-color: var(--primary-color-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.dot {
+  display: block;
+  height: 0.5rem;
+  width: 0.5rem;
+  background-color: var(--surface-color-3);
+  border-radius: 50%;
+  animation: bounce 1s infinite ease-in-out;
+}
+.dot:nth-child(2) {
+  animation-delay: 0.2s; /* Delay for the second dot */
+}
+.dot:nth-child(3) {
+  animation-delay: 0.4s; /* Delay for the third dot */
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    background-color: rgb(201, 201, 201);
+  }
+  50% {
+    transform: translateY(-1px);
+    background-color: rgb(171, 171, 171);
+  }
 }
