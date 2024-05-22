@@ -2,6 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./page.module.css";
 import { IHistory, postAIChatMessages } from "@/services/services";
+import Footer from "./components/footer/Footer";
+import Loader from "./components/loader/Loader";
+import RepeatIcon from "@/components/icons/RepeatIcon";
 
 const questions = [
   (value: string) =>
@@ -22,38 +25,29 @@ const MSG_TYPE = {
 };
 
 export default function Home() {
-  const msgInputRef = useRef<any>(null);
+  const messagesEndRef = useRef<any>(null);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [history, setHistory] = useState<IHistory[]>([]);
   const [messages, setMessages] = useState([
     {
       type: MSG_TYPE.INCOMING,
       content: "Za pokretanje AI Buddy-a upišite svoje ime.",
     },
   ]);
-  // const [history, setHistory] = useState<IHistory[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>();
 
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [history, setHistory] = useState<IHistory[]>([]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    function autoExpand() {
-      const textarea = document.getElementById("myTextarea");
-      if (textarea) {
-        textarea.style.height = "auto"; // Reset height to auto to calculate actual height
-        textarea.style.height = textarea.scrollHeight + "px"; // Set height to fit content
-      }
-    }
-
-    autoExpand(); // Call autoExpand after the component is mounted
-
-    // Cleanup function
-    return () => {
-      // You can remove event listeners or perform other cleanup here if needed
-    };
-  }, []);
+    scrollToBottom();
+  }, [messages]);
 
   const handleSendMessage = (value: string) => {
+    setErrorMessage(undefined);
     setMessages((x) => [
       ...x,
       {
@@ -101,8 +95,21 @@ export default function Home() {
           setHistory([...history, { Bot: res.answer, User }]);
           return;
         }
+        setMessages((x) => {
+          const newMessages = [...x];
+          newMessages.pop();
+          return newMessages;
+        });
+
+        setErrorMessage(value);
       })
-      .catch(() => {})
+      .catch(() => {
+        setMessages((x) => {
+          const newMessages = [...x];
+          newMessages.pop();
+          return newMessages;
+        });
+      })
       .finally(() => setIsLoading(false));
   };
 
@@ -112,69 +119,40 @@ export default function Home() {
       <div className={styles.conversationConteiner}>
         {messages.map((x, index) => (
           <div className={`${styles.messageBox} ${styles[x.type]}`} key={index}>
-            <p>{x.content}</p>
+            {x.content.split("\n").map((msg, index) => (
+              <p
+                key={index}
+                style={{ minHeight: "1rem", wordWrap: "break-word" }}
+              >
+                {msg}
+              </p>
+            ))}
           </div>
         ))}
-      </div>
-      {isLoading && (
-        <div className={styles.loadingContainer}>
-          <div className={styles.loadingIndicator}>
-            <span className={styles.dot}></span>
-            <span className={styles.dot}></span>
-            <span className={styles.dot}></span>
+        {errorMessage && (
+          <div className={`${styles.messageBox} ${styles[MSG_TYPE.ERROR]}`}>
+            <div>
+              {errorMessage.split("\n").map((msg, index) => (
+                <p
+                  key={index}
+                  style={{ minHeight: "1rem", lineBreak: "anywhere" }}
+                >
+                  {msg}
+                </p>
+              ))}
+            </div>
+            <button
+              onClick={() => handleSendMessage(errorMessage)}
+              className={styles.repeatButton}
+            >
+              <RepeatIcon />
+            </button>
           </div>
-        </div>
-      )}
-      <div className={styles.footer}>
-        <textarea
-          ref={msgInputRef}
-          placeholder="Unesite poruku"
-          disabled={isLoading}
-          className={styles.msgInput}
-          onChange={() => {
-            const textarea = msgInputRef.current;
-            if (textarea) {
-              textarea.style.height = "auto"; // Reset height to calculate actual height
-              textarea.style.height = `${textarea.scrollHeight}px`; // Set height to fit content
-            }
-          }}
-          rows={1}
-          onKeyDown={(e) => {
-            const value = msgInputRef?.current?.value;
-            if (!value) return;
-
-            if (e.key === "Enter" && e.shiftKey) {
-              e.preventDefault();
-              msgInputRef.current.value = value + "\n";
-              const textarea = msgInputRef.current;
-              if (textarea) {
-                textarea.style.height = "auto"; // Reset height to calculate actual height
-                textarea.style.height = `${textarea.scrollHeight}px`; // Set height to fit content
-              }
-              // setText((prevText) => prevText + "\n");
-              return;
-            }
-
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleSendMessage(value);
-              msgInputRef.current.value = "";
-            }
-          }}
-        />
-        <button
-          className={styles.sendBtn}
-          disabled={isLoading}
-          onClick={() => {
-            const value = msgInputRef?.current?.value;
-            if (!value) return;
-            handleSendMessage(value);
-            msgInputRef.current.value = "";
-          }}
-        >
-          S
-        </button>
+        )}
+        <div ref={messagesEndRef} />
       </div>
+      {isLoading && <Loader />}
+      <Footer handleSendMessage={handleSendMessage} isLoading={isLoading} />
     </main>
   );
 }

@@ -1,5 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap");
+
 * {
   box-sizing: border-box;
+  font-family: "Raleway", sans-serif;
 }
 :root {
   /* SURFACE COLOR */
@@ -20,6 +23,25 @@
   --br-s: 0.5rem;
   --br-m: 1rem;
   --br-l: 1.5rem;
+}
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #99abbe;
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #8fa0b2;
 }
 
 body {
