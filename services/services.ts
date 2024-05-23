@@ -16,7 +16,7 @@ export const postAIChatMessages = ({ History }: IProps) => {
         RetrievalMode: 2,
         Top: 1,
         SuggestFollowupQuestions: false,
-        Temperature: 0.1,
+        Temperature: 0.0,
         SemanticRanker: true,
       },
     }),
